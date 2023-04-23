@@ -15,10 +15,35 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as svgCaptcha from 'svg-captcha';
 import { Response } from 'express';
+import { Login } from './interface/user.interface';
 
+const obj: Login = {
+  uId: '123',
+  password: '123',
+  verification: '123',
+};
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Post('login')
+  login(@Body() login: Login, @Session() session) {
+    const resObj = {
+      code: 0,
+      msg: '登录成功',
+    };
+    if (login.uId !== obj.uId) {
+      resObj.code = 1;
+      resObj.msg = '用户名不存在，请检查或去注册新账号';
+    } else if (login.password !== obj.password) {
+      resObj.msg = '用户名和密码不匹配';
+      resObj.code = 2;
+    } else if (login.verification !== session.code) {
+      resObj.msg = '验证码错误';
+      resObj.code = 3;
+    }
+    return resObj;
+  }
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {

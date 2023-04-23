@@ -1,10 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { VersioningType } from '@nestjs/common';
+import { VersioningType, ValidationPipe } from '@nestjs/common';
 import * as session from 'express-session';
+import { NextFunction, Request, Response } from 'express';
+import { join } from 'path';
+import { ResponseCaptor } from 'src/common/response';
+import { HttpFilter } from 'src/common/HttpFilter';
 
 declare const module: any;
+
+function MiddleWareAll(req: Request, res: Response, next: NextFunction) {
+  next();
+}
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -18,6 +26,15 @@ async function bootstrap() {
       },
     }),
   );
+  app.useGlobalPipes(
+    new ValidationPipe({
+      disableErrorMessages: true
+    }),
+  );
+  app.useGlobalInterceptors(new ResponseCaptor());
+  app.useGlobalFilters(new HttpFilter());
+  app.useStaticAssets(join(__dirname, 'images'));
+  app.use(MiddleWareAll);
   app.enableVersioning({
     type: VersioningType.URI,
   });
