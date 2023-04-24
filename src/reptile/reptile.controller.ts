@@ -1,34 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ReptileService } from './reptile.service';
-import { CreateReptileDto } from './dto/create-reptile.dto';
-import { UpdateReptileDto } from './dto/update-reptile.dto';
-
+import { Controller, Get } from '@nestjs/common';
+import axios from 'axios';
+import * as cheerio from 'cheerio';
 @Controller('reptile')
 export class ReptileController {
-  constructor(private readonly reptileService: ReptileService) {}
-
-  @Post()
-  create(@Body() createReptileDto: CreateReptileDto) {
-    return this.reptileService.create(createReptileDto);
-  }
-
   @Get()
-  findAll() {
-    return this.reptileService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.reptileService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReptileDto: UpdateReptileDto) {
-    return this.reptileService.update(+id, updateReptileDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.reptileService.remove(+id);
+  async findAll() {
+    const res = await axios.get(
+      'https://image.baidu.com/search/albumsdetail?tn=albumsdetail&word=%E6%B8%90%E5%8F%98%E9%A3%8E%E6%A0%BC%E6%8F%92%E7%94%BB&fr=albumslist&album_tab=%E8%AE%BE%E8%AE%A1%E7%B4%A0%E6%9D%90&album_id=409&rn=30',
+    );
+    const $ = cheerio.load(res.data);
+    const lis = $('.albumsdetail-item-img');
+    console.log(lis.length);
+    return '爬虫成功';
   }
 }

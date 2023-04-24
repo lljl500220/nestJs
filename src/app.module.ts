@@ -10,7 +10,25 @@ import { UploadModule } from './upload/upload.module';
 import { ReptileModule } from './reptile/reptile.module';
 
 @Module({
-  imports: [PigModule, UserModule, UploadModule, ReptileModule],
+  imports: [
+    PigModule,
+    UserModule,
+    UploadModule,
+    ReptileModule,
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: 'localhost',
+      port: 3306,
+      username: 'root',
+      password: 'qinzhuan',
+      database: 'test',
+      entities: [],
+      synchronize: true,
+      retryDelay: 500,
+      retryAttempts: 10,
+      autoLoadEntities: true,
+    }),
+  ],
   controllers: [AppController, CatsController],
   providers: [AppService, CatsService],
 })

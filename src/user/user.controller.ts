@@ -9,6 +9,9 @@ import {
   Req,
   Res,
   Session,
+  UseGuards,
+  SetMetadata,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -16,6 +19,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import * as svgCaptcha from 'svg-captcha';
 import { Response } from 'express';
 import { Login } from './interface/user.interface';
+import { UserGuard } from './user/user.guard';
 
 const obj: Login = {
   uId: '123',
@@ -23,10 +27,12 @@ const obj: Login = {
   verification: '123',
 };
 @Controller('user')
+@UseGuards(UserGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('login')
+  @SetMetadata('role', ['admin'])
   login(@Body() login: Login, @Session() session) {
     const resObj = {
       code: 0,
@@ -46,6 +52,7 @@ export class UserController {
   }
 
   @Post()
+  @SetMetadata('role', ['admin'])
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
@@ -66,13 +73,8 @@ export class UserController {
   }
 
   @Get()
-  findAll() {
-    return this.userService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  findAll(@Query() query) {
+    return this.userService.findAll(query);
   }
 
   @Patch(':id')

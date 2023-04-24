@@ -1,9 +1,9 @@
-import { IsString, IsNumber } from 'class-validator';
 export class CreateUserDto {
-  @IsString({ message: '参数需要类型为string' })
+  id: string;
+
   name: string;
-  @IsNumber()
+
+  password: string;
+
   age: number;
-  @IsString()
-  uid: string;
 }
