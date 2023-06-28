@@ -8,8 +8,6 @@ export class UserGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    const role = this.reflector.get('role', context.getHandler());
-    console.log('经过了守卫', role);
     return true;
   }
 }

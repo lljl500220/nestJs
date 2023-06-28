@@ -20,12 +20,15 @@ import * as svgCaptcha from 'svg-captcha';
 import { Response } from 'express';
 import { Login } from './interface/user.interface';
 import { UserGuard } from './user/user.guard';
-
+import axios from 'axios';
 const obj: Login = {
   uId: '123',
   password: '123',
   verification: '123',
 };
+
+const appSecret = '8ea06076af3b0fd651d60c8902d76bc7';
+
 @Controller('user')
 @UseGuards(UserGuard)
 export class UserController {
@@ -58,7 +61,7 @@ export class UserController {
   }
 
   @Get('code')
-  createCode(@Req() req: Request, @Res() res: Response, @Session() session) {
+  createCode(@Res() res: Response, @Session() session) {
     // return '1';
     const code = svgCaptcha.create({
       width: 100,
@@ -73,8 +76,14 @@ export class UserController {
   }
 
   @Get()
-  findAll(@Query() query) {
-    return this.userService.findAll(query);
+  async findAll(@Query() query, @Res() res: Response) {
+    const data = await this.userService.findAll(query);
+    res.send({
+      success: false,
+      time: new Date(),
+      data: data,
+      status: 999999,
+    });
   }
 
   @Patch(':id')
@@ -85,5 +94,19 @@ export class UserController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
+  }
+
+  @Get('wxlogin')
+  async wxlogin(@Query('code') code: string) {
+    const res = await axios.get(
+      'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx44f087fc6112358a&secret=8ea06076af3b0fd651d60c8902d76bc7',
+    );
+    const res2 = await axios.post(
+      `https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=${res.data.access_token}`,
+      {
+        code,
+      },
+    );
+    return res2.data;
   }
 }

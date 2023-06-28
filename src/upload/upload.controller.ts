@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete,UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { UploadService } from './upload.service';
 import { CreateUploadDto } from './dto/create-upload.dto';
 import { UpdateUploadDto } from './dto/update-upload.dto';
-import { FileInterceptor } from "@nestjs/platform-express";
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('upload')
 export class UploadController {
@@ -11,7 +21,6 @@ export class UploadController {
   @Post('album')
   @UseInterceptors(FileInterceptor('file'))
   album(@UploadedFile() file: File) {
-    console.log(file);
     return '上传成功';
   }
   @Post()

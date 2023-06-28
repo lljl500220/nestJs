@@ -15,22 +15,26 @@ export class UserService {
     data.name = createUserDto.name;
     data.age = createUserDto.age;
     data.password = createUserDto.password;
-    // console.log(data);
     await this.user.save(data);
     return '成功';
   }
 
-  findAll(query: { keyWord: string; page: number; pageSize: number }) {
-    return this.user.find({
-      where: {
-        name: Like(`%${query.keyWord}%`),
-      },
-      order: {
-        id: 'DESC',
-      },
-      skip: (query.page - 1) * query.pageSize,
-      take: query.pageSize,
-    });
+  async findAll(query: { keyWord: string; page: number; pageSize: number }) {
+    try {
+      const data = await this.user.find({
+        where: {
+          name: Like(`%${query.keyWord}%`),
+        },
+        order: {
+          id: 'DESC',
+        },
+        skip: (query.page - 1) * query.pageSize,
+        take: query.pageSize,
+      });
+      return data;
+    } catch (e) {
+      return e.message;
+    }
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

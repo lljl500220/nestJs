@@ -4,14 +4,12 @@ export class HttpFilter implements ExceptionFilter {
   catch(exception: HttpException, host: ArgumentsHost): any {
     const ctx = host.switchToHttp();
     const req = ctx.getRequest();
-    // console.log(exception);
     const res = ctx.getResponse();
-    console.log(exception);
     const status = exception.getStatus();
     res.status(status).json({
       success: false,
       time: new Date(),
-      data: exception,
+      data: exception.message,
       status,
     });
   }

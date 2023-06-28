@@ -28,7 +28,7 @@ async function bootstrap() {
   );
   app.useGlobalPipes(
     new ValidationPipe({
-      disableErrorMessages: true
+      disableErrorMessages: true,
     }),
   );
   app.useGlobalInterceptors(new ResponseCaptor());
