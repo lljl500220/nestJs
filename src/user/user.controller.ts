@@ -98,15 +98,33 @@ export class UserController {
 
   @Get('wxlogin')
   async wxlogin(@Query('code') code: string) {
-    const res = await axios.get(
+    const token = await axios.get(
       'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx44f087fc6112358a&secret=8ea06076af3b0fd651d60c8902d76bc7',
     );
-    const res2 = await axios.post(
-      `https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=${res.data.access_token}`,
+    const res = await axios.post(
+      `https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=${token.data.access_token}`,
       {
         code,
       },
     );
-    return res2.data;
+    return res.data;
+  }
+
+  @Get('getScan')
+  async getScan(@Query('ztId') ztId: string, @Res() res: Response) {
+    const token = await axios.get(
+      'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx44f087fc6112358a&secret=8ea06076af3b0fd651d60c8902d76bc7',
+    );
+    const img = await axios.post(
+      `https://api.weixin.qq.com/wxa/getwxacode?access_token=${token.data.access_token}`,
+      {
+        path: `pages/index/index?ztId=${ztId}`,
+      },
+      {
+        responseType: 'arraybuffer',
+      },
+    );
+    res.header(img.headers);
+    res.send(img.data);
   }
 }
