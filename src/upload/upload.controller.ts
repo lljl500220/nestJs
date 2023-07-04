@@ -20,7 +20,7 @@ export class UploadController {
 
   @Post('album')
   @UseInterceptors(FileInterceptor('file'))
-  album(@UploadedFile() file: File) {
+  album(@UploadedFile() file: any) {
     return '上传成功';
   }
   @Post()

@@ -12,6 +12,7 @@ import {
   UseGuards,
   SetMetadata,
   Query,
+  Inject,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,18 +22,22 @@ import { Response } from 'express';
 import { Login } from './interface/user.interface';
 import { UserGuard } from './user/user.guard';
 import axios from 'axios';
+import Redis from 'ioredis';
+
 const obj: Login = {
   uId: '123',
   password: '123',
   verification: '123',
 };
 
-const appSecret = '8ea06076af3b0fd651d60c8902d76bc7';
-
 @Controller('user')
 @UseGuards(UserGuard)
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    @Inject('REDIS_CLIENT')
+    private readonly redisClient: Redis,
+    private readonly userService: UserService,
+  ) {}
 
   @Post('login')
   @SetMetadata('role', ['admin'])
@@ -112,19 +117,28 @@ export class UserController {
 
   @Get('getScan')
   async getScan(@Query('ztId') ztId: string, @Res() res: Response) {
-    const token = await axios.get(
-      'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx44f087fc6112358a&secret=8ea06076af3b0fd651d60c8902d76bc7',
-    );
-    const img = await axios.post(
-      `https://api.weixin.qq.com/wxa/getwxacode?access_token=${token.data.access_token}`,
-      {
-        path: `pages/index/index?ztId=${ztId}`,
-      },
-      {
-        responseType: 'arraybuffer',
-      },
-    );
-    res.header(img.headers);
-    res.send(img.data);
+    this.redisClient.get('access_token').then(async (redisRes) => {
+      if (!redisRes || redisRes === '') {
+        const token = await axios.get(
+          'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx44f087fc6112358a&secret=8ea06076af3b0fd651d60c8902d76bc7',
+        );
+        await this.redisClient.set('access_token', token.data.access_token);
+        await this.redisClient.expire('access_token', 7200);
+      }
+      const img = await axios.post(
+        `https://api.weixin.qq.com/wxa/getwxacode?access_token=${redisRes}`,
+        {
+          path: `pages/index/index?ztId=${ztId}`,
+        },
+        {
+          responseType: 'arraybuffer',
+        },
+      );
+      res.header(img.headers);
+      res.header({
+        'Content-disposition': `attachment;filename=${ztId}.jpg`,
+      });
+      res.send(img.data);
+    });
   }
 }
